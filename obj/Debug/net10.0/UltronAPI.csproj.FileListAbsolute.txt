@@ -64,3 +64,4 @@ C:\Users\reudy\source\repos\APIs\UltronAPI\UltronAPI\obj\Debug\net10.0\refint\Ul
 C:\Users\reudy\source\repos\APIs\UltronAPI\UltronAPI\obj\Debug\net10.0\UltronAPI.pdb
 C:\Users\reudy\source\repos\APIs\UltronAPI\UltronAPI\obj\Debug\net10.0\UltronAPI.genruntimeconfig.cache
 C:\Users\reudy\source\repos\APIs\UltronAPI\UltronAPI\obj\Debug\net10.0\ref\UltronAPI.dll
+C:\Users\reudy\source\repos\APIs\UltronAPI\UltronAPI\obj\Debug\net10.0\UltronAPI.sourcelink.json

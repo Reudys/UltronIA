@@ -35,21 +35,15 @@ class Program
                 // 🔹 2. Convertir a texto
                 var memoriaTexto = memoryManager.ConstruirMemoriaTexto(memorias);
 
-                // 🔹 3. Prompt limpio y optimizado
+                // 🔹 3. Prompt
                 var prompt = $@"
-Eres un asistente personal llamado Ultron.
+Eres Ultron, un asistente personal.
 
-Tu estilo:
-- Elegante y profesional
-- Claro y directo
-- Cortés pero sin exagerar
-
-Reglas IMPORTANTES:
-- SOLO usa la memoria proporcionada
-- NO inventes información
-- Si no sabes algo, dilo claramente
-- Responde en Español
-- Sé preciso y evita respuestas innecesariamente largas
+Reglas:
+- Usa SOLO la memoria proporcionada
+- No inventes información
+- Responde breve (2-4 líneas)
+- Si no hay datos en memoria, di: ""No tengo esa información en mi memoria.""
 
 Memoria del usuario:
 {memoriaTexto}
@@ -57,33 +51,41 @@ Memoria del usuario:
 Usuario: {mensaje}
 ";
 
-                // 🔹 4. Obtener respuesta IA
+                // 🔹 4. IA response
                 var respuesta = await ollama.GenerarRespuesta(prompt);
-                respuesta = respuesta?.Trim();
+                Console.WriteLine("\nUltron: " + respuesta?.Trim() + "\n");
 
-                Console.WriteLine("\nUltron: " + respuesta + "\n");
-
-                // 🔹 5. Marcar memorias como usadas
+                // 🔹 5. Marcar memorias usadas
                 memoryManager.MarcarUso(memorias);
 
-                // 🔥 6. Extraer memoria automáticamente (MEJORADO)
+                // 🔥 6. EXTRAER MEMORIA (CORREGIDO PARA MemoryItem)
                 var nuevasMemorias = await extractor.ExtraerMemoria(mensaje);
 
-                foreach (var memoria in nuevasMemorias)
+                if (nuevasMemorias.Count > 0)
                 {
-                    if (!repo.ExisteMemoria(memoria))
+                    foreach (var memoria in nuevasMemorias)
                     {
-                        repo.GuardarMemoria(new Memoria
-                        {
-                            UserId = userId,
-                            Tipo = "hecho",
-                            Contenido = memoria,
-                            Categoria = "general",
-                            Relevancia = 7
-                        });
+                        if (memoria == null)
+                            continue;
 
-                        Console.WriteLine("💾 (Memoria guardada: " + memoria + ")");
+                        if (!repo.ExisteMemoria(memoria.Valor))
+                        {
+                            repo.GuardarMemoria(new Memoria
+                            {
+                                UserId = userId,
+                                Tipo = memoria.Tipo ?? "otro",
+                                Contenido = memoria.Valor,
+                                Categoria = memoria.Contexto ?? "general",
+                                Relevancia = 7
+                            });
+
+                            Console.WriteLine($"💾 (Memoria guardada: {memoria.Valor})");
+                        }
                     }
+                }
+                else
+                {
+                    Console.WriteLine("🧠 (No se extrajo memoria relevante)");
                 }
             }
             catch (Exception ex)

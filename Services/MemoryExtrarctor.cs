@@ -11,18 +11,36 @@ namespace UltronAPI.Services
             _ollama = ollama;
         }
 
-        public async Task<List<string>> ExtraerMemoria(string mensaje)
+        public async Task<List<MemoryItem>> ExtraerMemoria(string mensaje)
         {
             var prompt = $@"
-Extrae información importante del usuario.
+Analiza el mensaje del usuario y extrae SOLO información útil para memoria.
 
-Reglas:
-- Devuelve un JSON válido
-- Formato: {{ ""memorias"": [""texto1"", ""texto2""] }}
-- Cada memoria debe ser corta y clara
-- No combines información
-- Ignora preguntas y cosas temporales
-- Si no hay nada útil, devuelve: {{ ""memorias"": [] }}
+REGLAS:
+- NO guardes preguntas
+- NO guardes respuestas del asistente
+- NO inventes información
+- NO completes información faltante
+- SOLO usa lo que el usuario dijo literalmente
+- Si no hay información útil: devuelve []
+
+Clasifica automáticamente cada memoria en:
+
+- tipo: (hecho | preferencia | habilidad | otro)
+- valor: información importante resumida
+- contexto: tema general (opcional)
+
+RESPONDE SOLO EN JSON válido:
+
+{{
+  ""memorias"": [
+    {{
+      ""tipo"": """",
+      ""valor"": """",
+      ""contexto"": """"
+    }}
+  ]
+}}
 
 Mensaje:
 {mensaje}
@@ -34,20 +52,38 @@ Mensaje:
             {
                 var json = JsonDocument.Parse(result);
 
-                var memorias = json.RootElement
-                    .GetProperty("memorias")
-                    .EnumerateArray()
-                    .Select(x => x.GetString())
-                    .Where(x => !string.IsNullOrWhiteSpace(x))
-                    .ToList();
+                var list = new List<MemoryItem>();
 
-                return memorias;
+                foreach (var item in json.RootElement.GetProperty("memorias").EnumerateArray())
+                {
+                    var tipo = item.GetProperty("tipo").GetString();
+                    var valor = item.GetProperty("valor").GetString();
+                    var contexto = item.TryGetProperty("contexto", out var ctx) ? ctx.GetString() : null;
+
+                    if (string.IsNullOrWhiteSpace(valor))
+                        continue;
+
+                    list.Add(new MemoryItem
+                    {
+                        Tipo = tipo ?? "otro",
+                        Valor = valor.Trim(),
+                        Contexto = contexto
+                    });
+                }
+
+                return list;
             }
             catch
             {
-                // fallback por si la IA rompe el JSON
-                return new List<string>();
+                return new List<MemoryItem>();
             }
         }
+    }
+
+    public class MemoryItem
+    {
+        public string Tipo { get; set; }
+        public string Valor { get; set; }
+        public string Contexto { get; set; }
     }
 }
