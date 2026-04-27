@@ -21,7 +21,7 @@
             // ❌ muy corto o inútil
             if (texto.Length < 5)
                 return false;
-
+            
             return true;
         }
     }

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("UltronAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d81984ff982f41b6a09b9ca12f36fed9b8402f86")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f11b3cc9dc3ab9f1ce92d01f133ae800321a0da4")]
 [assembly: System.Reflection.AssemblyProductAttribute("UltronAPI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("UltronAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

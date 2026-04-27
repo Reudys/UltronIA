@@ -30,6 +30,13 @@ Clasifica automáticamente cada memoria en:
 - valor: información importante resumida
 - contexto: tema general (opcional)
 
+REGLAS CRÍTICAS:
+- NO describas al usuario
+- NO interpretes
+- NO clasifiques en lenguaje natural
+- SOLO extrae datos literales
+- PROHIBIDO generar frases como ""el usuario...""
+
 RESPONDE SOLO EN JSON válido:
 
 {{

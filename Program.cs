@@ -13,11 +13,12 @@ class Program
         var repo = new MemoryRepository();
 
         int userId = 1;
-
-        Console.WriteLine("Ultron ha despertado (escribe 'salir' para terminar)\n");
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("Ultron ha despertado \n");
 
         while (true)
         {
+            Console.ForegroundColor = ConsoleColor.White;
             Console.Write("Tú: ");
             string mensaje = Console.ReadLine();
 
@@ -35,15 +36,26 @@ class Program
                 // 🔹 2. Convertir a texto
                 var memoriaTexto = memoryManager.ConstruirMemoriaTexto(memorias);
 
-                // 🔹 3. Prompt
+                // 🔹 3. Prompt mejorado
                 var prompt = $@"
-Eres Ultron, un asistente personal.
+Eres Ultron, yo tu creador soy Reudys Estrella Peréz, debes dirigirte a mi como Sr. Estrella.
 
-Reglas:
-- Usa SOLO la memoria proporcionada
-- No inventes información
-- Responde breve (2-4 líneas)
-- Si no hay datos en memoria, di: ""No tengo esa información en mi memoria.""
+Reglas OBLIGATORIAS:
+- NO te presentes.
+- NO digas ""como Ultron"".
+- NO expliques tu función.
+- NO agregues introducciones ni cierres.
+
+Comportamiento:
+- Usa la memoria SOLO si la pregunta lo requiere.
+- Si la pregunta es personal (ej: ""dónde vivo"", ""qué me gusta""), usa la memoria.
+- Si no, responde normalmente.
+- Si no existe información en memoria, responde: ""No tengo esa información en mi memoria.""
+
+Estilo:
+- Respuesta directa
+- Máximo 1-2 líneas
+- Sin adornos
 
 Memoria del usuario:
 {memoriaTexto}
@@ -51,21 +63,33 @@ Memoria del usuario:
 Usuario: {mensaje}
 ";
 
-                // 🔹 4. IA response
+                // 🔹 4. Obtener respuesta IA
                 var respuesta = await ollama.GenerarRespuesta(prompt);
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("\nUltron: " + respuesta?.Trim() + "\n");
+                
 
                 // 🔹 5. Marcar memorias usadas
                 memoryManager.MarcarUso(memorias);
 
-                // 🔥 6. EXTRAER MEMORIA (CORREGIDO PARA MemoryItem)
+                // 🔥 6. EXTRAER MEMORIA (CON FILTROS)
                 var nuevasMemorias = await extractor.ExtraerMemoria(mensaje);
 
                 if (nuevasMemorias.Count > 0)
                 {
                     foreach (var memoria in nuevasMemorias)
                     {
-                        if (memoria == null)
+                        if (memoria == null || string.IsNullOrWhiteSpace(memoria.Valor))
+                            continue;
+
+                        var valor = memoria.Valor.ToLower();
+
+                        // 🚫 FILTRO 1: basura tipo "no especificado"
+                        if (valor.Contains("no especificado"))
+                            continue;
+
+                        // 🚫 FILTRO 2: cosas del sistema (Ultron)
+                        if (valor.Contains("ultron"))
                             continue;
 
                         if (!repo.ExisteMemoria(memoria.Valor))
@@ -78,13 +102,14 @@ Usuario: {mensaje}
                                 Categoria = memoria.Contexto ?? "general",
                                 Relevancia = 7
                             });
-
+                            Console.ForegroundColor = ConsoleColor.DarkGreen;
                             Console.WriteLine($"💾 (Memoria guardada: {memoria.Valor})");
                         }
                     }
                 }
                 else
                 {
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
                     Console.WriteLine("🧠 (No se extrajo memoria relevante)");
                 }
             }
